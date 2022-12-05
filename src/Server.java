@@ -3,13 +3,11 @@ import java.net.*;
 
 public class Server{
 
-
-    static String byteToBinary(byte bits){
-        return String.format("%8s", Integer.toBinaryString(bits & 0xFF)).replace(' ', '0');
-    }
-
     public static int checkQuery(byte[] query){
-        //Check if the query is well formatted
+        
+
+        //A faire pour alexandre 
+
         return 0;
     }
 
@@ -33,7 +31,9 @@ public class Server{
                     clientSocket.close();
                 }
 
+                Query query = new Query(queryBuffer);
 
+                System.out.println(RequestHTTP.Request(query));
             }
 
         } catch (IOException e) {
