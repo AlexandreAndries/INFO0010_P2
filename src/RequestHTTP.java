@@ -9,7 +9,7 @@ public class RequestHTTP {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
 
-        int status = connection.getResponseCode();
+        //int status = connection.getResponseCode();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         String inputLine;
@@ -19,6 +19,12 @@ public class RequestHTTP {
             content.append(inputLine);
         }
         in.close();
+
+        byte[] bytesResponse = new byte[content.length()];
+        for (int i = 0; i < content.length(); i++) {
+            bytesResponse[i] = (byte) content.charAt(i);
+        }
+        System.out.println(bytesResponse.length);
 
         return content.toString();
     }

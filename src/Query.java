@@ -3,12 +3,14 @@ public class Query {
 
     byte[] header;
     byte[] question;
+    byte[] query;
 
     /**
      * This constructor instanciate a Query
      * @param query the bytes of the query
      */
     Query(byte[] query){
+        this.query = query;
         this.header = new byte[HEADER_LENGTH];
         this.question = new byte[query.length - HEADER_LENGTH];
 
@@ -46,27 +48,46 @@ public class Query {
         return urlDecoded;
     }
 
+    /**
+     * Get the domain name of the question of the dns query
+     * @return the domain name 
+     */
+    public String getOwnedDomainName() {
+        String ownedDomainName = new String();
+        int urlLength = (int) this.question[0]; //we get the length of the encoded url
+        int index = urlLength + 1; //we set the index on the length byte of the domain name
+        int lengthLabel = (int) this.question[index], indexLabel = 0; //initialize the length of the current label of the domain and the index of each labels 
+
+        //we go through the question until we have the 0 length byte 
+        while((int) this.question[index] != 0) {
+
+            //we put the current byte as a char in the string
+            ownedDomainName += (char) this.question[index];
+
+            //if the indexLabel is equal to the current lengthLabel 
+            //we put a "." in the string and
+            //set lengthLabel to the next label length and 
+            //reset the indexLabel to 0
+            if (indexLabel == lengthLabel && (int) this.question[index+1] != 0){
+                ownedDomainName += ".";
+                indexLabel = 0;
+                lengthLabel = (int) this.question[index + 1];
+                index++;
+
+            } else {
+                index++;
+                indexLabel++;
+            }
+        }
+        
+        return ownedDomainName;
+    }
+
     public byte[] getHeader() {
-        return header;
+        return this.header;
     }
 
     public byte[] getQuestion() {
-        return question;
-    }
-
-    @Override
-    public String toString() {
-        String s = "Header:\n";
-
-        for (int i = 0; i < this.header.length; i++) {
-            s += String.format("%8s", Integer.toBinaryString(this.header[i] & 0xFF)).replace(' ', '0') + "\n";
-        }
-
-        s += "\nQuestion:\n";
-
-        for (int i = 0; i < this.question.length; i++) {
-            s += String.format("%8s", Integer.toBinaryString(this.question[i] & 0xFF)).replace(' ', '0') + "\n";
-        }
-        return s;
+        return this.question;
     }
 }

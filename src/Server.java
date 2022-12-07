@@ -2,15 +2,6 @@ import java.io.*;
 import java.net.*;
 
 public class Server{
-
-    public static int checkQuery(byte[] query){
-        
-
-        //A faire pour alexandre 
-
-        return 0;
-    }
-
     public static void main(String[] args) throws IOException {
         try (ServerSocket server = new ServerSocket(53)){
             System.out.println("Server: ON");
@@ -31,9 +22,13 @@ public class Server{
                     clientSocket.close();
                 }
 
-                Query query = new Query(queryBuffer);
 
-                System.out.println(RequestHTTP.Request(query));
+
+
+
+//                          /!\ Zone test /!\ 
+                Query query = new Query(queryBuffer);
+                System.out.println(query.getOwnedDomainName());
             }
 
         } catch (IOException e) {
