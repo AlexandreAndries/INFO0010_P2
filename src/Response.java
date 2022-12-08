@@ -5,6 +5,7 @@ import java.util.Base64;
 
 public class Response {
     private final int HEADER_LENGTH = 12;
+    private final int MAX_HTTP_ENCODED_LENGTH = 60000;
 
     private byte[] header;
     private byte[] question;
@@ -100,15 +101,25 @@ public class Response {
             ttl[2] |= 1 << 1; ttl[2] |= 1 << 2; ttl[2] |= 1 << 3;
 
     
+            //Request HHTP if not valid we return null; because no answer.
             String request = RequestHTTP.Request(this.query);
             if (request == null)
                 return null;
 
-            byte[] encodedRequest = Base64.getEncoder().encode(request.getBytes());
+            //We get the request encoded and we look at the size of the encoded request if it is > 60000 we keep the 60000 first
+            byte[] temp = Base64.getEncoder().encode(request.getBytes());
+            byte[] encodedUrl = new byte[temp.length > MAX_HTTP_ENCODED_LENGTH ? 10 : temp.length];
+            
+            for (int i = 0; i < encodedUrl.length; i++)
+                encodedUrl[i] = temp[i];
+
+            
+
 
 
             return null;
         } catch (Exception e) {
+            System.out.println("caca 1");
             return null;
         }
     }
