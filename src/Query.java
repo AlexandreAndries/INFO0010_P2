@@ -49,7 +49,7 @@ public class Query {
 
         return urlDecoded;
     }
-    
+
     /**
      * Get the domain name of the question of the dns query
      * @return the domain name 
@@ -74,12 +74,11 @@ public class Query {
                 ownedDomainName += ".";
                 indexLabel = 0;
                 lengthLabel = (int) this.question[index + 1];
-                index++;
 
-            } else {
-                index++;
+            } else 
                 indexLabel++;
-            }
+                
+            index++;
         }
         
         return ownedDomainName;
