@@ -1,12 +1,17 @@
 import java.nio.ByteBuffer;
+import java.util.Base64;
+
+        
 
 public class Response {
     private final int HEADER_LENGTH = 12;
 
-    byte[] header;
-    byte[] question;
-    byte[] answer;
-    byte[] response;
+    private byte[] header;
+    private byte[] question;
+    private byte[] answer;
+    private byte[] response;
+
+    private Query query;
 
     /**
      * Set the error code of the dns answer
@@ -41,21 +46,21 @@ public class Response {
     }
 
     public Response(Query query) {
+        this.query = query;
         this.header = query.getHeader();
         this.question = query.getQuestion();
+        this.answer = answer();
 
         this.header[2] |= 1 << 7; //QR bit set to 1
-        this.header[7] |= 1 << 0; //ANCOUNT set to one because of the assignement
-            
-        //écrire answer
+        if (this.answer == null) //if thera is no answer
+            this.header[7] |= 1 << 0; //ANCOUNT set to one because of the assignement
+
         
-        
-        for (int i = 0; i < this.response.length; i++) 
-            System.out.println(String.format("%8s", Integer.toBinaryString(this.response[i] & 0xFF)).replace(' ', '0'));
         
     }
 
     public Response(Query query, int rCode) {
+        this.query = query;
         this.header = query.getHeader();
         this.question = query.getQuestion();
 
@@ -70,10 +75,31 @@ public class Response {
         buffer.put(this.question);
 
         this.response = buffer.array();
-        
-        for (int i = 0; i < this.response.length; i++) 
-            System.out.println(String.format("%8s", Integer.toBinaryString(this.response[i] & 0xFF)).replace(' ', '0'));
-        
+
+        //for (int i = 0; i < this.response.length; i++) 
+        //    System.out.println(String.format("%8s", Integer.toBinaryString(this.response[i] & 0xFF)).replace(' ', '0'));
+    }
+
+    private byte[] answer() {
+        try {
+            String request = RequestHTTP.Request(this.query);
+            if (request == null){
+                return null;
+            }
+
+            byte[] encodedRequest = Base64.getEncoder().encode(request.getBytes());
+
+
+            return null;
+
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public byte[] getResponse() {
+        return this.response;
     }
 
     

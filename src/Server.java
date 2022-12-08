@@ -2,7 +2,20 @@ import java.io.*;
 import java.net.*;
 
 public class Server{
-    public static void main(String[] args) throws IOException {
+
+
+    static private boolean checkUrl(String url){
+        try{
+            new URL(url).toURI();
+            return true;
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
+    public static void main(String[] args){
         try (ServerSocket server = new ServerSocket(53)){
             System.out.println("Server: ON");
 
@@ -10,9 +23,10 @@ public class Server{
                 Socket clientSocket = server.accept();
                 System.out.println("New client connected to the sever...");
 
-                byte[] lengthBuffer = new byte[2];
                 InputStream in = clientSocket.getInputStream();
+                OutputStream out = clientSocket.getOutputStream();
 
+                byte[] lengthBuffer = new byte[2];
                 in.read(lengthBuffer);
                 int length = ((lengthBuffer[0] & 0xff) << 8) | (lengthBuffer[1] & 0xff);
 
@@ -22,13 +36,16 @@ public class Server{
                     clientSocket.close();
                 }
 
-
-
-
-
-//                          /!\ Zone test /!\ 
                 Query query = new Query(queryBuffer);
-                System.out.println(query.getOwnedDomainName());
+
+                //Check if the url is valid
+                if (!checkUrl(query.getQuestionUrl())) {
+                    out.write(new Response(query, 3).getResponse());
+                    out.flush();
+                    clientSocket.close();
+                }
+
+                Response response = new Response(query);
             }
 
         } catch (IOException e) {

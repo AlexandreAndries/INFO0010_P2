@@ -3,29 +3,30 @@ import java.net.*;
 
 public class RequestHTTP {
 
+
     public static String Request(Query query) throws IOException {
 
+        //Creating the  GET request
         URL url = new URL(query.getQuestionUrl());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
 
-        //int status = connection.getResponseCode();
+        //testing if the request is successful or not
+        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuffer content = new StringBuffer();
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String inputLine;
-        StringBuffer content = new StringBuffer();
+            //we read the input while everything is read from the input stream
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
 
-        while ((inputLine = in.readLine()) != null) {
-            content.append(inputLine);
-        }
-        in.close();
+            //close the connection and return the request response 
+            in.close();
+            return content.toString();
 
-        byte[] bytesResponse = new byte[content.length()];
-        for (int i = 0; i < content.length(); i++) {
-            bytesResponse[i] = (byte) content.charAt(i);
-        }
-        System.out.println(bytesResponse.length);
-
-        return content.toString();
+        } else 
+            return null;
     }
 }
