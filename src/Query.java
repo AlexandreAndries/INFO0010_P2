@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class Query {
     private final int HEADER_LENGTH = 12;
 
@@ -47,7 +49,7 @@ public class Query {
 
         return urlDecoded;
     }
-
+    
     /**
      * Get the domain name of the question of the dns query
      * @return the domain name 

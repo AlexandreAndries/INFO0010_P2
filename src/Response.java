@@ -55,7 +55,7 @@ public class Response {
         if (this.answer == null) //if thera is no answer
             this.header[7] |= 1 << 0; //ANCOUNT set to one because of the assignement
 
-        
+        answer();
         
     }
 
@@ -82,17 +82,32 @@ public class Response {
 
     private byte[] answer() {
         try {
+            //Create the name section of the Resource record (-4 because of the other section of the question that are not the Name)
+            byte[] questionName = new byte[this.question.length - 4];
+            for (int i = 0; i < questionName.length; i++)
+                questionName[i] = this.question[i];
+
+
+            //Initialize the type, class, ttl and rdlength sections of the Resource record
+            byte[] rType = new byte[2], rClass = new byte[2], ttl = new byte[4], rDLength = new byte[2];
+
+            //Set the type to TXT and the class to IN
+            rType[1] |= 1 << 4;
+            rClass[1] |= 1 << 0;
+
+            //Set the Time To Live to 3600 (default)
+            ttl[3] |= 1 << 4;
+            ttl[2] |= 1 << 1; ttl[2] |= 1 << 2; ttl[2] |= 1 << 3;
+
+    
             String request = RequestHTTP.Request(this.query);
-            if (request == null){
+            if (request == null)
                 return null;
-            }
 
             byte[] encodedRequest = Base64.getEncoder().encode(request.getBytes());
 
 
             return null;
-
-
         } catch (Exception e) {
             return null;
         }

@@ -20,33 +20,41 @@ public class Server{
             System.out.println("Server: ON");
 
             while (true) {
+                //Waiting for a new client
                 Socket clientSocket = server.accept();
                 System.out.println("New client connected to the sever...");
 
+                //Creating the output and input stream for the client
                 InputStream in = clientSocket.getInputStream();
                 OutputStream out = clientSocket.getOutputStream();
 
+                //Reading the length of the query
                 byte[] lengthBuffer = new byte[2];
                 in.read(lengthBuffer);
                 int length = ((lengthBuffer[0] & 0xff) << 8) | (lengthBuffer[1] & 0xff);
 
+                //Reading the query until every bytes are read
                 byte[] queryBuffer = new byte[length];
                 if (in.read(queryBuffer) != length) {
                     clientSocket.setSoTimeout(5000);
                     clientSocket.close();
                 }
 
+                //Initialize the Query variable
                 Query query = new Query(queryBuffer);
+                Response r = new Response(query);
 
-                //Check if the url is valid
+                clientSocket.close();
+
+                
+            }
+
+            /*//Check if the url is valid
                 if (!checkUrl(query.getQuestionUrl())) {
                     out.write(new Response(query, 3).getResponse());
                     out.flush();
                     clientSocket.close();
-                }
-
-                Response response = new Response(query);
-            }
+                } */
 
         } catch (IOException e) {
             System.out.println("Server error: " + e.getMessage());
