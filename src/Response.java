@@ -1,7 +1,7 @@
 import java.nio.ByteBuffer;
 import java.util.Base64;
 
-        
+
 
 public class Response {
     private final int HEADER_LENGTH = 12;
@@ -19,11 +19,12 @@ public class Response {
      * @param rcode the error code
      */
     private void setRCODE(int rcode) {
+        // asert rcode != 0
         switch (rcode) {
             case 1:
                 this.header[3] |= 1 << 0;
                 break;
-            
+
             case 2:
                 this.header[3] |= 1 << 1;
                 break;
@@ -40,7 +41,7 @@ public class Response {
             case 5:
                 this.header[3] |= 1 << 2;
                 this.header[3] |= 1 << 0;
-        
+
             default:
                 break;
         }
@@ -57,19 +58,18 @@ public class Response {
             this.header[7] |= 1 << 0; //ANCOUNT set to one because of the assignement
 
         answer();
-        
+
     }
 
     public Response(Query query, int rCode) {
         this.query = query;
         this.header = query.getHeader();
         this.question = query.getQuestion();
+        this.answer = null;
 
         this.header[2] |= 1 << 7; //QR bit set to 1
 
         setRCODE(rCode);
-
-        this.answer = null;
 
         ByteBuffer buffer = ByteBuffer.allocate(this.HEADER_LENGTH + this.question.length);
         buffer.put(this.header);
@@ -77,7 +77,7 @@ public class Response {
 
         this.response = buffer.array();
 
-        //for (int i = 0; i < this.response.length; i++) 
+        //for (int i = 0; i < this.response.length; i++)
         //    System.out.println(String.format("%8s", Integer.toBinaryString(this.response[i] & 0xFF)).replace(' ', '0'));
     }
 
@@ -100,7 +100,7 @@ public class Response {
             ttl[3] |= 1 << 4;
             ttl[2] |= 1 << 1; ttl[2] |= 1 << 2; ttl[2] |= 1 << 3;
 
-    
+
             //Request HHTP if not valid we return null; because no answer.
             String request = RequestHTTP.Request(this.query);
             if (request == null)
@@ -109,11 +109,11 @@ public class Response {
             //We get the request encoded and we look at the size of the encoded request if it is > 60000 we keep the 60000 first
             byte[] temp = Base64.getEncoder().encode(request.getBytes());
             byte[] encodedUrl = new byte[temp.length > MAX_HTTP_ENCODED_LENGTH ? 10 : temp.length];
-            
+
             for (int i = 0; i < encodedUrl.length; i++)
                 encodedUrl[i] = temp[i];
 
-            
+
 
 
 
@@ -128,5 +128,5 @@ public class Response {
         return this.response;
     }
 
-    
+
 }
