@@ -75,15 +75,9 @@ public class Query {
                 indexLabel = 0;
                 lengthLabel = (int) this.question[index + 1];
 
-<<<<<<< HEAD
             } else
                 indexLabel++;
 
-=======
-            } else 
-                indexLabel++;
-                
->>>>>>> b15c15ddd85e01939eee69eae58aee54ca038748
             index++;
         }
 
