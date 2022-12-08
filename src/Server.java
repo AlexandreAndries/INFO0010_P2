@@ -42,11 +42,20 @@ public class Server{
 
                 //Initialize the Query variable
                 Query query = new Query(queryBuffer);
+
+                //Check if the url is valid
+                if (!checkUrl(query.getQuestionUrl())) {
+                    out.write(new Response(query, 3).getResponse());
+                    out.flush();
+                    clientSocket.close();
+                }
+
+
                 Response r = new Response(query);
 
                 clientSocket.close();
 
-                
+
             }
 
             /*//Check if the url is valid

@@ -19,7 +19,7 @@ public class Query {
         //Header filling
         for (int i = 0; i < HEADER_LENGTH; i++)
             this.header[i] = query[i];
-    
+
         //Question filling
         for (int i = HEADER_LENGTH, j = 0; i < query.length; i++, j++)
             this.question[j] = query[i];
@@ -44,44 +44,43 @@ public class Query {
         byte[] bytesUrlDecoded = Base32.decode(urlEncoded);
 
         //Translate each bytes of the url into character
-        for (int i = 0; i < bytesUrlDecoded.length; i++) 
+        for (int i = 0; i < bytesUrlDecoded.length; i++)
             urlDecoded += (char) bytesUrlDecoded[i];
 
         return urlDecoded;
     }
-    
+
     /**
      * Get the domain name of the question of the dns query
-     * @return the domain name 
+     * @return the domain name
      */
     public String getOwnedDomainName() {
         String ownedDomainName = new String();
         int urlLength = (int) this.question[0]; //we get the length of the encoded url
         int index = urlLength + 1; //we set the index on the length byte of the domain name
-        int lengthLabel = (int) this.question[index], indexLabel = 0; //initialize the length of the current label of the domain and the index of each labels 
+        int lengthLabel = (int) this.question[index], indexLabel = 0; //initialize the length of the current label of the domain and the index of each labels
 
-        //we go through the question until we have the 0 length byte 
+        //we go through the question until we have the 0 length byte
         while((int) this.question[index] != 0) {
 
             //we put the current byte as a char in the string
             ownedDomainName += (char) this.question[index];
 
-            //if the indexLabel is equal to the current lengthLabel 
+            //if the indexLabel is equal to the current lengthLabel
             //we put a "." in the string and
-            //set lengthLabel to the next label length and 
+            //set lengthLabel to the next label length and
             //reset the indexLabel to 0
             if (indexLabel == lengthLabel && (int) this.question[index+1] != 0){
                 ownedDomainName += ".";
                 indexLabel = 0;
                 lengthLabel = (int) this.question[index + 1];
-                index++;
 
-            } else {
-                index++;
+            } else
                 indexLabel++;
-            }
+
+            index++;
         }
-        
+
         return ownedDomainName;
     }
 
