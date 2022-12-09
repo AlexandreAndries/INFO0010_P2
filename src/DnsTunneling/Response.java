@@ -1,3 +1,4 @@
+package DnsTunneling;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 
@@ -177,8 +178,6 @@ public class Response {
             String request = RequestHTTP.Request(this.query);
             if (request == null)
                 return null;
-
-            System.out.println(request);
 
             //We get the request encoded and we look at the size of the encoded request if it is > 60000 we keep the 60000 first
             byte[] temp = Base64.getEncoder().encode(request.getBytes());

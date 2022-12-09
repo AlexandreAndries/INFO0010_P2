@@ -1,3 +1,4 @@
+package DnsTunneling;
 /* (PD) 2006 The Bitzi Corporation
  *
  * 1. Authorship. This work and others bearing the above

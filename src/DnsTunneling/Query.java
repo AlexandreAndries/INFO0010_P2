@@ -1,3 +1,5 @@
+package DnsTunneling;
+
 public class Query {
     private final int HEADER_LENGTH = 12;
 
@@ -9,7 +11,7 @@ public class Query {
      * This constructor instanciate a Query
      * @param query the bytes of the query
      */
-    Query(byte[] query){
+    public Query(byte[] query){
         this.query = query;
         this.header = new byte[HEADER_LENGTH];
         this.question = new byte[query.length - HEADER_LENGTH];
