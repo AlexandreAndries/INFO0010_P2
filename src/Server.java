@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.nio.ByteBuffer;
 
 public class Server{
 
@@ -52,10 +53,6 @@ public class Server{
 
 
                 Response r = new Response(query);
-
-                clientSocket.close();
-
-
             }
 
         } catch (IOException e) {

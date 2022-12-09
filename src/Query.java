@@ -1,5 +1,3 @@
-import java.util.*;
-
 public class Query {
     private final int HEADER_LENGTH = 12;
 
@@ -41,7 +39,7 @@ public class Query {
             urlEncoded += (char) this.question[i];
 
         //Get the bytes of the url decoded
-        byte[] bytesUrlDecoded = Base32.decode(urlEncoded);
+        byte[] bytesUrlDecoded = Base32.decode(urlEncoded.replace("=", ""));
 
         //Translate each bytes of the url into character
         for (int i = 0; i < bytesUrlDecoded.length; i++)

@@ -7,6 +7,8 @@ public class Response {
     private final int HEADER_LENGTH = 12;
     private final int MAX_HTTP_ENCODED_LENGTH = 60000;
 
+    private boolean isTruncated;
+ 
     private byte[] header;
     private byte[] question;
     private byte[] answer;
@@ -52,13 +54,36 @@ public class Response {
         this.header = query.getHeader();
         this.question = query.getQuestion();
         this.answer = answer();
+        
 
         this.header[2] |= 1 << 7; //QR bit set to 1
-        if (this.answer == null) //if thera is no answer
-            this.header[7] |= 1 << 0; //ANCOUNT set to one because of the assignement
+        if (this.answer == null){ //if thera is no answer
+            setRCODE(3);
 
-        answer();
+            ByteBuffer buffer = ByteBuffer.allocate(this.HEADER_LENGTH + this.question.length);
+            buffer.put(this.header);
+            buffer.put(this.question);
 
+            this.response = buffer.array();
+
+            System.out.println("pas de reponse");
+            return;
+        }
+
+        this.header[7] |= 1 << 0; //ANCOUNT set to one because of the assignement
+        if(this.isTruncated){
+            this.header[1] |= 1 << 6; //TR bit
+            setRCODE(3);
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate(this.HEADER_LENGTH + this.question.length + answer.length);
+        buffer.put(this.header);
+        buffer.put(this.question);
+        buffer.put(this.answer);
+
+        this.response = buffer.array();
+
+        return;
     }
 
     public Response(Query query, int rCode) {
@@ -81,6 +106,25 @@ public class Response {
         //    System.out.println(String.format("%8s", Integer.toBinaryString(this.response[i] & 0xFF)).replace(' ', '0'));
     }
 
+    private static byte[] txtRData(byte[] request){
+        int nbrLengthBytes = (request.length / 255) + (request.length % 255 == 0 ? 0 : 1), index = 0, indexRequest = 0;
+        byte[] txtRData = new byte[request.length + nbrLengthBytes];
+
+        while (nbrLengthBytes != 0) {
+            int length = (nbrLengthBytes > 1 ? 255 : request.length % 255);
+            txtRData[index++] = (byte) length;
+
+            int i = indexRequest;
+            while (indexRequest < i + length)
+                txtRData[index++] = request[indexRequest++];
+            
+
+            nbrLengthBytes--;
+        }
+
+        return txtRData;
+    }
+
     private byte[] answer() {
         try {
             //Create the name section of the Resource record (-4 because of the other section of the question that are not the Name)
@@ -90,7 +134,7 @@ public class Response {
 
 
             //Initialize the type, class, ttl and rdlength sections of the Resource record
-            byte[] rType = new byte[2], rClass = new byte[2], ttl = new byte[4], rDLength = new byte[2];
+            byte[] rType = new byte[2], rClass = new byte[2], ttl = new byte[4];
 
             //Set the type to TXT and the class to IN
             rType[1] |= 1 << 4;
@@ -108,18 +152,34 @@ public class Response {
 
             //We get the request encoded and we look at the size of the encoded request if it is > 60000 we keep the 60000 first
             byte[] temp = Base64.getEncoder().encode(request.getBytes());
-            byte[] encodedUrl = new byte[temp.length > MAX_HTTP_ENCODED_LENGTH ? 10 : temp.length];
 
+            //Initialize the encoded byte url and see if it is truncated
+            byte[] encodedUrl;
+            if (temp.length > MAX_HTTP_ENCODED_LENGTH) {
+                encodedUrl = new byte[MAX_HTTP_ENCODED_LENGTH];
+                this.isTruncated = true;
+            }else{
+                encodedUrl = new byte[temp.length];
+            }
+
+            //Filling of the encodedUrl
             for (int i = 0; i < encodedUrl.length; i++)
                 encodedUrl[i] = temp[i];
 
 
+            //Change the encoded url into TXT RDATA format
+            byte[] rData = txtRData(encodedUrl);
+            
+            ByteBuffer lengthRData = ByteBuffer.allocate(2);
 
+            
+            
+            
+            
 
+            return new byte[3];
 
-            return null;
         } catch (Exception e) {
-            System.out.println("caca 1");
             return null;
         }
     }
