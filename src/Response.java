@@ -52,6 +52,7 @@ public class Response {
     public Response(Query query) {
         this.query = query;
         this.header = query.getHeader();
+        
         this.question = query.getQuestion();
         this.answer = answer();
         
@@ -66,24 +67,21 @@ public class Response {
 
             this.response = buffer.array();
 
-            System.out.println("pas de reponse");
             return;
         }
 
         this.header[7] |= 1 << 0; //ANCOUNT set to one because of the assignement
         if(this.isTruncated){
-            this.header[1] |= 1 << 6; //TR bit
+            this.header[2] |= 1 << 6; //TR bit
             setRCODE(3);
         }
 
-        ByteBuffer buffer = ByteBuffer.allocate(this.HEADER_LENGTH + this.question.length + answer.length);
+        ByteBuffer buffer = ByteBuffer.allocate(this.HEADER_LENGTH + this.question.length + this.answer.length);
         buffer.put(this.header);
         buffer.put(this.question);
         buffer.put(this.answer);
 
         this.response = buffer.array();
-
-        return;
     }
 
     public Response(Query query, int rCode) {
@@ -134,7 +132,7 @@ public class Response {
 
 
             //Initialize the type, class, ttl and rdlength sections of the Resource record
-            byte[] rType = new byte[2], rClass = new byte[2], ttl = new byte[4];
+            byte[] rType = new byte[2], rClass = new byte[2], ttl = new byte[4], rDLength = new byte[2];
 
             //Set the type to TXT and the class to IN
             rType[1] |= 1 << 4;
@@ -169,15 +167,21 @@ public class Response {
 
             //Change the encoded url into TXT RDATA format
             byte[] rData = txtRData(encodedUrl);
-            
-            ByteBuffer lengthRData = ByteBuffer.allocate(2);
 
-            
-            
-            
-            
+            //Set the RDLENGTH to the RDATA length
+            ByteBuffer lengthRData = ByteBuffer.allocate(4);
+            lengthRData.putInt(rData.length);
+            rDLength[0] = lengthRData.array()[2]; rDLength[1] = lengthRData.array()[3];
 
-            return new byte[3];
+            ByteBuffer response = ByteBuffer.allocate(questionName.length + 10 + rData.length);
+            response.put(questionName);
+            response.put(rType);
+            response.put(rClass);
+            response.put(ttl);
+            response.put(rDLength);
+            response.put(rData);    
+
+            return response.array();
 
         } catch (Exception e) {
             return null;
