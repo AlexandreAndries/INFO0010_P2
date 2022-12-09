@@ -7,7 +7,7 @@ public class Response {
     private final int HEADER_LENGTH = 12;
     private final int MAX_HTTP_ENCODED_LENGTH = 60000;
 
-    private boolean isTruncated;
+    private boolean isTruncated = false;
  
     private byte[] header;
     private byte[] question;
@@ -49,59 +49,90 @@ public class Response {
         }
     }
 
+    private static byte[] intAsbyteArr(int nbr) {
+        byte[] bytes = new byte[2];
+
+        ByteBuffer buffer = ByteBuffer.allocate(4);
+        buffer.putInt(nbr);
+
+        bytes[0] = buffer.array()[2]; bytes[1] = buffer.array()[3];
+        
+        return bytes;
+    }
+
+    /**
+     * 
+     * @param query
+     */
     public Response(Query query) {
+        //Initialize the fields of a Response
         this.query = query;
         this.header = query.getHeader();
-        
         this.question = query.getQuestion();
         this.answer = answer();
-        
 
         this.header[2] |= 1 << 7; //QR bit set to 1
-        if (this.answer == null){ //if thera is no answer
+
+        if (this.answer == null){ //if there is no answer
+            //Get the number of bytes of the response
+            int lengthResponse = this.HEADER_LENGTH + this.question.length;
+
+            //Set the error code to Name Error
             setRCODE(3);
 
-            ByteBuffer buffer = ByteBuffer.allocate(this.HEADER_LENGTH + this.question.length);
+            //Allocate buffer for the dns response without answer
+            ByteBuffer buffer = ByteBuffer.allocate(lengthResponse + 2);
+            buffer.put(intAsbyteArr(lengthResponse));
             buffer.put(this.header);
             buffer.put(this.question);
 
             this.response = buffer.array();
+        } else {
 
-            return;
-        }
+            //Get the number of bytes of the response
+            int lengthResponse = this.HEADER_LENGTH + this.question.length + this.answer.length;
 
-        this.header[7] |= 1 << 0; //ANCOUNT set to one because of the assignement
-        if(this.isTruncated){
-            this.header[2] |= 1 << 6; //TR bit
-            setRCODE(3);
-        }
+            this.header[7] |= 1 << 0; //ANCOUNT set to one because of the assignement
 
-        ByteBuffer buffer = ByteBuffer.allocate(this.HEADER_LENGTH + this.question.length + this.answer.length);
-        buffer.put(this.header);
-        buffer.put(this.question);
-        buffer.put(this.answer);
+            //If the answer is truncated we set the error to NameError
+            if(this.isTruncated){
+                this.header[2] |= 1 << 6; //TR bit
+                setRCODE(3);
+            }
 
-        this.response = buffer.array();
+            //Allocate buffer for the dns response
+            ByteBuffer response = ByteBuffer.allocate(lengthResponse + 2);
+            response.put(intAsbyteArr(lengthResponse));
+            response.put(this.header);
+            response.put(this.question);
+            response.put(this.answer);
+
+            this.response = response.array();
+        }        
     }
 
     public Response(Query query, int rCode) {
+        //Initialize the fields of a Response
         this.query = query;
         this.header = query.getHeader();
         this.question = query.getQuestion();
         this.answer = null;
 
+        //Get the number of bytes of the response
+        int lengthResponse = this.HEADER_LENGTH + this.question.length;
+
         this.header[2] |= 1 << 7; //QR bit set to 1
 
+        //Set the error with the error code given
         setRCODE(rCode);
 
-        ByteBuffer buffer = ByteBuffer.allocate(this.HEADER_LENGTH + this.question.length);
+        //Allocate buffer for the dns response without answer
+        ByteBuffer buffer = ByteBuffer.allocate(lengthResponse + 2);
+        buffer.put(intAsbyteArr(lengthResponse));
         buffer.put(this.header);
         buffer.put(this.question);
 
         this.response = buffer.array();
-
-        //for (int i = 0; i < this.response.length; i++)
-        //    System.out.println(String.format("%8s", Integer.toBinaryString(this.response[i] & 0xFF)).replace(' ', '0'));
     }
 
     private static byte[] txtRData(byte[] request){
@@ -130,7 +161,6 @@ public class Response {
             for (int i = 0; i < questionName.length; i++)
                 questionName[i] = this.question[i];
 
-
             //Initialize the type, class, ttl and rdlength sections of the Resource record
             byte[] rType = new byte[2], rClass = new byte[2], ttl = new byte[4], rDLength = new byte[2];
 
@@ -139,14 +169,16 @@ public class Response {
             rClass[1] |= 1 << 0;
 
             //Set the Time To Live to 3600 (default)
-            ttl[3] |= 1 << 4;
-            ttl[2] |= 1 << 1; ttl[2] |= 1 << 2; ttl[2] |= 1 << 3;
+            ttl[3] |= 1 << 4; //First 8 bits 
+            ttl[2] |= 1 << 1; ttl[2] |= 1 << 2; ttl[2] |= 1 << 3; //Last 8 bits
 
 
             //Request HHTP if not valid we return null; because no answer.
             String request = RequestHTTP.Request(this.query);
             if (request == null)
                 return null;
+
+            System.out.println(request);
 
             //We get the request encoded and we look at the size of the encoded request if it is > 60000 we keep the 60000 first
             byte[] temp = Base64.getEncoder().encode(request.getBytes());
@@ -156,22 +188,19 @@ public class Response {
             if (temp.length > MAX_HTTP_ENCODED_LENGTH) {
                 encodedUrl = new byte[MAX_HTTP_ENCODED_LENGTH];
                 this.isTruncated = true;
-            }else{
+            }else
                 encodedUrl = new byte[temp.length];
-            }
+            
 
             //Filling of the encodedUrl
             for (int i = 0; i < encodedUrl.length; i++)
                 encodedUrl[i] = temp[i];
 
-
             //Change the encoded url into TXT RDATA format
             byte[] rData = txtRData(encodedUrl);
 
             //Set the RDLENGTH to the RDATA length
-            ByteBuffer lengthRData = ByteBuffer.allocate(4);
-            lengthRData.putInt(rData.length);
-            rDLength[0] = lengthRData.array()[2]; rDLength[1] = lengthRData.array()[3];
+            rDLength = intAsbyteArr(rData.length);
 
             ByteBuffer response = ByteBuffer.allocate(questionName.length + 10 + rData.length);
             response.put(questionName);

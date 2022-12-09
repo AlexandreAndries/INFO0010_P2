@@ -35,25 +35,23 @@ public class Server{
 
                 //Reading the query until every bytes are read
                 byte[] queryBuffer = new byte[length];
-                if (in.read(queryBuffer) != length) {
-                    clientSocket.setSoTimeout(5000);
-                    clientSocket.close();
-                }
+                in.read(queryBuffer);
+                
 
                 //Initialize the Query variable
                 Query query = new Query(queryBuffer);
 
-                //Check if the url is valid
-                if (!checkUrl(query.getQuestionUrl())) {
-                    out.write(new Response(query, 3).getResponse());
-                    out.flush();
-                    clientSocket.close();
-                }
+                //System.out.println(String.format("%8s", Integer.toBinaryString(query.header[0] & 0xFF)).replace(' ', '0') + String.format("%8s", Integer.toBinaryString(query.header[1] & 0xFF)).replace(' ', '0'));
+
+                Response r = new Response(query);
+
+                //System.out.println(String.format("%8s", Integer.toBinaryString(r.getResponse()[0] & 0xFF)).replace(' ', '0') + String.format("%8s", Integer.toBinaryString(r.getResponse()[1] & 0xFF)).replace(' ', '0'));
 
 
-                out.write(new Response(query).getResponse());
+                out.write(r.getResponse());
                 out.flush();
                 clientSocket.close();
+                
             }
 
         } catch (IOException e) {
