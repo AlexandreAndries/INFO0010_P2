@@ -31,9 +31,7 @@ public class RequestHTTP {
         URL url = new URL(query.getQuestionUrl());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
-/*----------------------------------------------------------------------------*/
-/*- END OF CLASS -------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
+
         // Test if the request is successful or not
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
