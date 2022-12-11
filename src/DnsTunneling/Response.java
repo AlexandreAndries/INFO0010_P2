@@ -9,7 +9,7 @@ public class Response {
     private final int MAX_HTTP_ENCODED_LENGTH = 60000;
 
     private boolean isTruncated = false;
-    private int RCODE = 0 ;
+    private int RCODE ;
 
     private byte[] header;
     private byte[] question;
@@ -47,8 +47,9 @@ public class Response {
 
             case 5:
                 this.RCODE = 5 ;
-                this.header[3] |= 1 << 2;
                 this.header[3] |= 1 << 0;
+                this.header[3] |= 1 << 2;
+                break;
 
             default:
                 this.RCODE = 0 ;

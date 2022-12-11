@@ -12,7 +12,7 @@ public class ClientRequest implements Runnable {
     private final short TXT = 16 ;
 
     private Socket clientSocket = null;
-    private String[] args = null;
+    private String[] args ;
 
     public ClientRequest(Socket socket, String[] args) {
         this.clientSocket = socket;
@@ -43,14 +43,18 @@ public class ClientRequest implements Runnable {
                 rError.printQuestion(this.clientSocket.getInetAddress().getHostAddress());
                 out.flush();
                 this.clientSocket.close();
+
             } else if (!isValidURL(query.getQuestionUrl())) {                      // 6 works !
                 Response rError = new Response(query, RCODE_NAME);
                 out.write(rError.getResponse());
                 rError.printQuestion(this.clientSocket.getInetAddress().getHostAddress());
                 out.flush();
                 this.clientSocket.close();
-            } else if (query.getQDCOUNT() != (short)1 && query.getQTYPE() != TXT
-                 /*&& !((query.getOwnedDomainName()).equals(this.args[0]))*/ ) {   // 5 almost finished
+
+            } else if (query.getQDCOUNT() != (short)1
+                        || query.getQTYPE() != TXT
+                        || !(query.getOwnedDomainName().equals(this.args[0]))) {   // 5 almost finished
+
                 Response rError = new Response(query, RCODE_REFUSED);
                 out.write(rError.getResponse());
                 rError.printQuestion(this.clientSocket.getInetAddress().getHostAddress());
