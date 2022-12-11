@@ -37,24 +37,30 @@ public class ClientRequest implements Runnable {
             Query query = new Query(queryBuffer);
 
             // =================================================================
-            if (!isValidURL(query.getQuestionUrl())) {                             // 6 works !
-                out.write(new Response(query, RCODE_NAME).getResponse());
+            if (query.checkFormatErrors()) {                                       // 4 works !
+                Response rError = new Response(query, RCODE_FORMAT);
+                out.write(rError.getResponse());
+                rError.printQuestion(this.clientSocket.getInetAddress().getHostAddress());
                 out.flush();
                 this.clientSocket.close();
-
+            } else if (!isValidURL(query.getQuestionUrl())) {                      // 6 works !
+                Response rError = new Response(query, RCODE_NAME);
+                out.write(rError.getResponse());
+                rError.printQuestion(this.clientSocket.getInetAddress().getHostAddress());
+                out.flush();
+                this.clientSocket.close();
             } else if (query.getQDCOUNT() != (short)1 && query.getQTYPE() != TXT
                  /*&& !((query.getOwnedDomainName()).equals(this.args[0]))*/ ) {   // 5 almost finished
-                out.write(new Response(query, RCODE_REFUSED).getResponse());
+                Response rError = new Response(query, RCODE_REFUSED);
+                out.write(rError.getResponse());
+                rError.printQuestion(this.clientSocket.getInetAddress().getHostAddress());
                 out.flush();
                 this.clientSocket.close();
-
-            // } else if (/*condition*/) { // 4
-            //     out.write(new Response(query, RCODE_NAME).getResponse());
-            //     out.flush();
-            //     this.clientSocket.close();
             // =================================================================
             } else {
-                out.write(new Response(query).getResponse());
+                Response r = new Response(query) ;
+                out.write(r.getResponse());
+                r.printQuestion(this.clientSocket.getInetAddress().getHostAddress());
                 out.flush();
                 this.clientSocket.close();
             }
@@ -64,7 +70,6 @@ public class ClientRequest implements Runnable {
             throw new RuntimeException("Error in the process of the client request", e);
         }
     }
-
 
     public static boolean isValidURL(String url)
     {

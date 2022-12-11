@@ -49,7 +49,6 @@ public class Query {
         for (int i = 0; i < bytesUrlDecoded.length; i++)
             urlDecoded += (char) bytesUrlDecoded[i];
 
-        System.out.println(urlDecoded);
         return urlDecoded;
     }
 
@@ -87,6 +86,19 @@ public class Query {
         return ownedDomainName;
     }
 
+    public boolean checkFormatErrors() {
+        byte QEND = (byte) query[query.length-5];
+
+        if (QEND != 0
+                  || question.length <= 5
+                  || (((header[2] & 0x80) >> 7) != 0 )
+                  || (((header[3] & 0x70) >> 4) != 0 )) {
+            return true ;
+        } else {
+            return false ;
+        }
+    }
+
     /**
      * Convert byte array of size 2 to its short value
      * @return short value of byte array
@@ -118,4 +130,5 @@ public class Query {
     public byte[] getQuestion() {
         return this.question;
     }
+
 }

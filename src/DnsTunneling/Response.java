@@ -9,6 +9,7 @@ public class Response {
     private final int MAX_HTTP_ENCODED_LENGTH = 60000;
 
     private boolean isTruncated = false;
+    private int RCODE = 0 ;
 
     private byte[] header;
     private byte[] question;
@@ -22,30 +23,35 @@ public class Response {
      * @param rcode the error code
      */
     private void setRCODE(int rcode) {
-        // asert rcode != 0
         switch (rcode) {
             case 1:
+                this.RCODE = 1 ;
                 this.header[3] |= 1 << 0;
                 break;
 
             case 2:
+                this.RCODE = 2 ;
                 this.header[3] |= 1 << 1;
                 break;
 
             case 3:
+                this.RCODE = 3 ;
                 this.header[3] |= 1 << 0;
                 this.header[3] |= 1 << 1;
                 break;
 
             case 4:
+                this.RCODE = 4 ;
                 this.header[3] |= 1 << 2;
                 break;
 
             case 5:
+                this.RCODE = 5 ;
                 this.header[3] |= 1 << 2;
                 this.header[3] |= 1 << 0;
 
             default:
+                this.RCODE = 0 ;
                 break;
         }
     }
@@ -220,5 +226,30 @@ public class Response {
         return this.response;
     }
 
+    public void printQuestion(String hostAddress) {
+        Query query = this.query ;
+        String QTYPE = new String();
+        switch ((int)query.getQTYPE()) {
+            case 1:
+                QTYPE = "A";
+                break;
+            case 16:
+                QTYPE = "TXT";
+                break;
+            default:
+                throw new RuntimeException("ERROR: QTYPE not supported\n");
+        }
+
+        System.out.println(
+            "Question (CL=" +
+            hostAddress +
+            ", NAME=" +
+            query.getQuestionUrl() + "." + query.getOwnedDomainName() +
+            ", TYPE=" +
+            QTYPE +
+            ") => " +
+            this.RCODE
+        );
+    }
 
 }
