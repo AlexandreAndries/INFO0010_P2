@@ -1,5 +1,7 @@
 package DnsTunneling;
 
+import java.nio.* ;
+
 public class Query {
     private final int HEADER_LENGTH = 12;
 
@@ -47,6 +49,7 @@ public class Query {
         for (int i = 0; i < bytesUrlDecoded.length; i++)
             urlDecoded += (char) bytesUrlDecoded[i];
 
+        System.out.println(urlDecoded);
         return urlDecoded;
     }
 
@@ -82,6 +85,30 @@ public class Query {
         }
 
         return ownedDomainName;
+    }
+
+    /**
+     * Convert byte array of size 2 to its short value
+     * @return short value of byte array
+     */
+    private static short toShort(byte[] array) {
+        // a Short is written on 2 bytes
+        ByteBuffer tmpBB = ByteBuffer.wrap(array);
+        return tmpBB.getShort() ;
+    }
+
+    public short getQDCOUNT() {
+        byte[] QDCOUNT = {(byte) this.header[4], (byte) this.header[5]};
+
+        return toShort(QDCOUNT);
+    }
+
+    public short getQTYPE() {
+        byte[] query = this.query ;
+        int queryLength = query.length ;
+        byte[] QTYPE = {(byte) query[queryLength-2], (byte) query[query.length-1]};
+
+        return toShort(QTYPE);
     }
 
     public byte[] getHeader() {

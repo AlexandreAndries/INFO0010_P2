@@ -20,12 +20,12 @@ public class Server{
                 client = serverSocket.accept();
                 System.out.println("New client connected " + client.getInetAddress().getHostAddress());
             } catch (Exception e) {
-                throw new RuntimeException("Error connection to the client", e);
+                throw new RuntimeException("Error with the connection to the client", e);
             }
             try {
                 new Thread(new ClientRequest(client, args)).start();
             } catch (Exception e) {
-    
+
             }
         }
     }

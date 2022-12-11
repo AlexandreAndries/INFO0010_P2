@@ -9,7 +9,7 @@ public class Response {
     private final int MAX_HTTP_ENCODED_LENGTH = 60000;
 
     private boolean isTruncated = false;
- 
+
     private byte[] header;
     private byte[] question;
     private byte[] answer;
@@ -57,12 +57,12 @@ public class Response {
         buffer.putInt(nbr);
 
         bytes[0] = buffer.array()[2]; bytes[1] = buffer.array()[3];
-        
+
         return bytes;
     }
 
     /**
-     * 
+     *
      * @param query
      */
     public Response(Query query) {
@@ -109,7 +109,7 @@ public class Response {
             response.put(this.answer);
 
             this.response = response.array();
-        }        
+        }
     }
 
     public Response(Query query, int rCode) {
@@ -147,7 +147,7 @@ public class Response {
             int i = indexRequest;
             while (indexRequest < i + length)
                 txtRData[index++] = request[indexRequest++];
-            
+
 
             nbrLengthBytes--;
         }
@@ -170,7 +170,7 @@ public class Response {
             rClass[1] |= 1 << 0;
 
             //Set the Time To Live to 3600 (default)
-            ttl[3] |= 1 << 4; //First 8 bits 
+            ttl[3] |= 1 << 4; //First 8 bits
             ttl[2] |= 1 << 1; ttl[2] |= 1 << 2; ttl[2] |= 1 << 3; //Last 8 bits
 
 
@@ -189,7 +189,7 @@ public class Response {
                 this.isTruncated = true;
             }else
                 encodedUrl = new byte[temp.length];
-            
+
 
             //Filling of the encodedUrl
             for (int i = 0; i < encodedUrl.length; i++)
@@ -207,7 +207,7 @@ public class Response {
             response.put(rClass);
             response.put(ttl);
             response.put(rDLength);
-            response.put(rData);    
+            response.put(rData);
 
             return response.array();
 
