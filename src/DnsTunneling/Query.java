@@ -1,18 +1,39 @@
 package DnsTunneling;
 
+/**
+ * \file Query.java
+ *
+ *
+ * \brief INFO0010 Projet 2
+ * \author Andries Alexandre s196948
+ * \author Rotheudt Thomas s191895
+ * \version 0.1
+ * \date 11/12/2022
+ *
+ */
+
+ /** Class description :
+  *
+  * Query class is used to represent the query to send over the network.
+  * A Query object is built according to the RFC1035 standards.
+  *
+  */
 import java.nio.* ;
 
+// class Query
 public class Query {
-    private final int HEADER_LENGTH = 12;
-
-    byte[] header;
-    byte[] question;
-    byte[] query;
-
-    /**
-     * This constructor instanciate a Query
-     * @param query the bytes of the query
-     */
+    /*------------------------------------------------------------------------*/
+    /*- Variables ------------------------------------------------------------*/
+    /*------------------------------------------------------------------------*/
+    // Class Constants
+    private final int HEADER_LENGTH = 12; // Length in bytes of header section
+    // Class Variables
+    byte[] header;                        // Byte array corresp. to header section
+    byte[] question;                      // Byte array corresp. to question section
+    byte[] query;                         // Byte array corresp. to entire query
+    /*------------------------------------------------------------------------*/
+    /*- Constructor ----------------------------------------------------------*/
+    /*------------------------------------------------------------------------*/
     public Query(byte[] query){
         this.query = query;
         this.header = new byte[HEADER_LENGTH];
@@ -25,11 +46,16 @@ public class Query {
         //Question filling
         for (int i = HEADER_LENGTH, j = 0; i < query.length; i++, j++)
             this.question[j] = query[i];
-    }
-
+    } // Query object constuctor
+    /*------------------------------------------------------------------------*/
+    /*- Public Methods -------------------------------------------------------*/
+    /*------------------------------------------------------------------------*/
     /**
-     * Get the url decoded in the question name of the dns query
-     * @return the url decoded
+     * \fn tring getQuestionUrl()
+     * \brief Get the decoded url in the question name of the dns query
+     *
+     * \return  the decoded url
+     *
      */
     public String getQuestionUrl(){
         String urlEncoded = new String();
@@ -51,27 +77,30 @@ public class Query {
 
         return urlDecoded;
     }
-
+    /*------------------------------------------------------------------------*/
     /**
-     * Get the domain name of the question of the dns query
-     * @return the domain name
+     * \fn String getOwnedDomainName()
+     * \brief Get the domain name of the question of the dns query
+     *
+     * \return   the domain name
+     *
      */
     public String getOwnedDomainName() {
         String ownedDomainName = new String();
-        int urlLength = (int) this.question[0]; //we get the length of the encoded url
-        int index = urlLength + 1; //we set the index on the length byte of the domain name
-        int lengthLabel = (int) this.question[index], indexLabel = 0; //initialize the length of the current label of the domain and the index of each labels
+        int urlLength = (int) this.question[0]; // get the length of the encoded url
+        int index = urlLength + 1; // set the index on the length byte of the domain name
+        int lengthLabel = (int) this.question[index], indexLabel = 0; // initialize the length of the current label of the domain and the index of each labels
 
-        //we go through the question until we have the 0 length byte
+        // go through the question until we have the 0 length byte
         while((int) this.question[index] != 0) {
 
-            //we put the current byte as a char in the string
+            // put the current byte as a char in the string
             ownedDomainName += (char) this.question[index];
 
-            //if the indexLabel is equal to the current lengthLabel
-            //we put a "." in the string and
-            //set lengthLabel to the next label length and
-            //reset the indexLabel to 0
+            // if the indexLabel is equal to the current lengthLabel,
+            // put a "." in the string and
+            // set lengthLabel to the next label length and
+            // reset the indexLabel to 0
             if (indexLabel == lengthLabel && (int) this.question[index+1] != 0){
                 ownedDomainName += ".";
                 indexLabel = 0;
@@ -85,7 +114,16 @@ public class Query {
 
         return ownedDomainName;
     }
-
+    /*------------------------------------------------------------------------*/
+    /**
+     * \fn boolean checkFormatErrors()
+     * \brief Checks the query for format errors
+     *        (size of question, error codes, etc.)
+     *
+     * \return  - true if there is an error
+     *          - false if not
+     *
+     */
     public boolean checkFormatErrors() {
         byte QEND = (byte) query[query.length-5];
 
@@ -98,23 +136,32 @@ public class Query {
             return false ;
         }
     }
-
+    /*------------------------------------------------------------------------*/
+    /*- Private Static Methods -----------------------------------------------*/
+    /*------------------------------------------------------------------------*/
     /**
-     * Convert byte array of size 2 to its short value
-     * @return short value of byte array
+     * \fn short toShort(byte[] array)
+     * \brief Convert byte array of size 2 to its short value
+     *
+     * \return  short value of byte array
+     *
      */
     private static short toShort(byte[] array) {
         // a Short is written on 2 bytes
         ByteBuffer tmpBB = ByteBuffer.wrap(array);
         return tmpBB.getShort() ;
     }
-
+    /*------------------------------------------------------------------------*/
+    /*- Getters --------------------------------------------------------------*/
+    /*------------------------------------------------------------------------*/
+    // Returns value of QDCOUNT
     public short getQDCOUNT() {
         byte[] QDCOUNT = {(byte) this.header[4], (byte) this.header[5]};
 
         return toShort(QDCOUNT);
     }
-
+    /*------------------------------------------------------------------------*/
+    // Returns value of QTYPE
     public short getQTYPE() {
         byte[] query = this.query ;
         int queryLength = query.length ;
@@ -122,13 +169,17 @@ public class Query {
 
         return toShort(QTYPE);
     }
-
+    /*------------------------------------------------------------------------*/
+    // Returns Header (byte array)
     public byte[] getHeader() {
         return this.header;
     }
-
+    /*------------------------------------------------------------------------*/
+    // Returns Question (byte array)
     public byte[] getQuestion() {
         return this.question;
     }
-
 }
+/*----------------------------------------------------------------------------*/
+/*- END OF CLASS -------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
